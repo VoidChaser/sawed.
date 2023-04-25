@@ -3,6 +3,7 @@ from data import db_session
 from data.users import User
 from data.files import File
 from data.posts import Post
+from werkzeug.utils import secure_filename
 from PIL import Image
 import os
 from forms.Register import RegisterForm
@@ -109,26 +110,36 @@ def logout():
 @login_required
 def add_news():
     form = PostsForm()
-    if form.validate_on_submit():
 
+    if form.validate_on_submit():
         db_sess = db_session.create_session()
         post = Post()
         post.title = form.title.data
         post.text = form.text.data
-        post.view_link = form.file.data
-        file = Image.open(post.view_link)
-        print(file.info)        # print(file.format.lower())
-        file_name = 'static/' + str(current_user.id) + '_' + post.title + '_' + post.text[:10] + '_' + post.view_link.filename + '.' + file.format.lower()
-        file.save(file_name)
-        file.close()
 
-        # Добавить ингтеграцию в files/file создание файла
+        files_filenames = []
+        for file in form.files.data:
+            file_name = secure_filename(file.filename)
+            files_filenames.append(file_name)
+            path = 'static/' + str(current_user.id) + '_' + post.title + '_' + post.text[:10] + '_' + file_name
+            file.save(path)
+
+            nf = File()
+            nf.file_link = path
+            nf.file_name = file_name
+            nf.user_id = current_user.id
+            db_sess.add(nf)
+
+        if files_filenames:
+
+            post.files_linked = ', '.join(list(map(lambda x: db_sess.query(File).filter(File.file_name == x).first().file_link, files_filenames)))
+            post.files_count = len(files_filenames)
+            print(post.files_linked)
 
         post.created_date = datetime.datetime.now()
         post.is_private = form.is_private.data
-        current_user.posts.insert(0, post)
 
-        # тут проблема с этим инсертом
+        current_user.posts.append(post)
         db_sess.merge(current_user)
         db_sess.commit()
         return redirect('/')
@@ -138,17 +149,22 @@ def add_news():
 
 def create_admin_user(name, pas, ma_log, ma_pass):
     if ma_log == main_admin_log and ma_pass == main_admin_pass:
-        user = User()
-        user.nickname = name
-        user.set_password(pas)
-        user.email = 'troxa75@yandex.ru'
-        user.modified_date = datetime.datetime.now()
-        user.admin_rules = True
-        # print
         db_ses = db_session.create_session()
-        db_ses.add(user)
-        db_ses.commit()
-        print(f"New admin called {name} was created.")
+        # print
+        if not db_ses.query(User).filter(User.nickname == name,
+                                         User.email == 'troxa75@yandex.ru',
+                                         User.admin_rules == 1).all():
+            user = User()
+            user.nickname = name
+            user.set_password(pas)
+            user.email = 'troxa75@yandex.ru'
+            user.modified_date = datetime.datetime.now()
+            user.admin_rules = True
+
+            db_ses.add(user)
+            db_ses.commit()
+            print(f"New admin called {name} was created.")
+
 
 
 def create_meet_img(path):
@@ -159,8 +175,8 @@ def create_meet_img(path):
     file = File()
     file.user_id = db_ses.query(User).filter(User.admin_rules == 1).first().id
     file.file_link = path
-    file.file_mini_link = create_miniature(path)
-    print(file.file_link, file.file_mini_link)
+    # file.file_mini_link = create_miniature(path)
+    # print(file.file_link, file.file_mini_link)
     # print(path)
 
     db_ses.add(file)
@@ -179,10 +195,12 @@ def meet_post():
     print(list(map(lambda x: x.user.id, db_ses.query(File).all())))
     print(post.post_creator_id)
     quer = db_ses.query(File).filter(File.user_id == post.post_creator_id).first()
-    post.view_link = quer.file_mini_link
+    post.files_linked = ', '.join([quer.file_link])
+    post.files_count = 1
+
 
     # post.file_link = db_ses.query(File).filter(File.user_id == post.post_creator_id).first()
-    print(post.view_link)
+    print(post.files_linked)
     db_ses.add(post)
     db_ses.commit()
 

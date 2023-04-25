@@ -10,18 +10,44 @@
 {% block content %}
 
 <h1>Ugly's</h1>
+
+
 {% for item in posts%}
 <div class="col-md6 border rounded">
+
+
     <h2>{{item.title}}</h2>
+
     <div>
         {{item.content}}
     </div>
+
     <div>
         Текст - {{item.text}}
-        <img src={{item.view_link}}>
     <p>Автор - {{item.user.nickname}}, Дата написания - {{item.created_date}}</p>
+    </div>
+
+    <div id="carouselExampleSlidesOnly" class="carousel slide" data-bs-ride="carousel">
+
+  <div class="carousel-inner">
+        {% for img in range(item.files_count) %}
+      <p>{{img}}</p>
+      {% if loop.first %}
+      <p>Я зашел в первый элемент карусели</p>
+      <p>Он называется {{img}}</p>
+      <div class="carousel-item active">
+      <img src="{{item.files_linked.split(', ')[img]}}" class="d-block w-100" alt="...">
+      </div>
+      {% else %}
+      <div class="carousel-item">
+      <img src="{{item.files_linked.split(', ')[img]}}" class="d-block w-100" alt="...">
+      </div>
+    {% endif %}
+    </div>
 
     </div>
+    {% endfor %}.
+
 </div>
 {% endfor %}
 {% endblock %}

@@ -7,11 +7,11 @@ def create_miniature(path: str):
     size = x, y = img.size
     print(size)
     if x > y:
-        new_img = img.resize((800, 600))
+        new_img = img.resize((x // 3, y // 2))
     elif x < y:
-        new_img = img.resize((600, 800))
+        new_img = img.resize((x // 2, y // 3))
     else:
-        new_img = img.resize((700, 700))
+        new_img = img.resize((x // 3, y // 3))
     new_dir = path.split('/')[0] + '/miniatures'
     if not os.path.exists(new_dir):
         os.mkdir(new_dir)
