@@ -31,7 +31,7 @@ def main():
     create_admin_user('trofi', 'Kukush', main_admin_log, main_admin_pass)
     # create_meet_img('static/img/welcome.jpg')
     # meet_post()
-    app.run()
+    app.run(host='0.0.0.0', port=8000, debug=True)
 
 
 @app.route('/')
