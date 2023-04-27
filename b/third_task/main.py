@@ -1,4 +1,4 @@
-from flask import Flask, render_template, redirect, request, make_response, session
+from flask import Flask, render_template, redirect, request, make_response, session, abort
 from data import db_session
 from data.users import User
 from data.files import File
@@ -152,6 +152,78 @@ def add_news():
         return redirect('/')
     return render_template('post.html', title='Добавление новости',
                            form=form)
+
+@app.route('/news/<int:id>', methods=['GET', 'POST'])
+@login_required
+def edit_news(id):
+    form = PostsForm()
+    if request.method == "GET":
+        db_sess = db_session.create_session()
+        post = db_sess.query(Post).filter(Post.id == id,
+                                          Post.post_creator_id == current_user.id
+                                          ).first()
+        if post:
+            form.title.data = post.title
+            form.text.data = post.text
+            form.is_private.data = post.is_private
+
+
+        else:
+            abort(404)
+
+    if form.validate_on_submit():
+        db_sess = db_session.create_session()
+        post = db_sess.query(Post).filter(Post.id == id,
+                                          Post.post_creator_id == current_user.id
+                                          ).first()
+        if post:
+            post.title = form.title.data
+            post.text = form.text.data
+            post.is_private = form.is_private.data
+            print(form.files.data)
+            if form.files.data:
+                files_filenames = []
+
+                for file in form.files.data:
+                    file_name = secure_filename(file.filename)
+                    files_filenames.append(file_name)
+                    path = 'static/img/' + file_name
+                    file.save(path)
+
+                    nf = File()
+                    nf.file_link = path
+                    nf.file_name = file_name
+                    nf.user_id = current_user.id
+                    db_sess.add(nf)
+
+                if files_filenames:
+                    post.files_linked = ', '.join(files_filenames)
+                    post.files_count = len(files_filenames)
+                    print(post.files_linked)
+            db_sess.commit()
+
+            return redirect('/')
+        else:
+            abort(404)
+    return render_template('post.html',
+                           title='Редактирование новости',
+                           form=form
+                           )
+
+
+@app.route('/news_delete/<int:id>', methods=['GET', 'POST'])
+@login_required
+def news_delete(id):
+    db_sess = db_session.create_session()
+    post = db_sess.query(Post).filter(Post.id == id,
+                                      Post.post_creator_id == current_user.id
+                                      ).first()
+    if post:
+        db_sess.delete(post)
+        db_sess.commit()
+    else:
+        abort(404)
+    return redirect('/')
 
 
 def create_admin_user(name, pas, ma_log, ma_pass):

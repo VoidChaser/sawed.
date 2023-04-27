@@ -30,13 +30,16 @@
     <p>Автор - {{item.user.nickname}}, Дата написания - {{item.created_date}}</p>
     </div>
 
-
-    <div id="carouselIndicators" class="carousel slide" data-bs-ride="carousel">
-        <div class="carousel-indicators">
-            {% for i in item.files_linked.split(', ') %}
-                <button type="button" data-bs-target="#carouselIndicators" data-bs-slide-to="{{loop.index0}}" {% if loop.index0 == 0 %} class="active" aria-current="true" {% endif %} aria-label="Slide {{ loop.index }}"></button>
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css" integrity="sha384-Gn5384xqQ1aoWXA+058RXPxPg6fy4IWvTNh0E263XmFcJlSAwiGgFAW/dAiS6JXm" crossorigin="anonymous">
+    <script src="https://code.jquery.com/jquery-3.2.1.slim.min.js" integrity="sha384-KJ3o2DKtIkvYIK3UENzmM7KCkRr/rE9/Qpg6aAZGJwFDMVNA/GpGFF93hXpG5KkN" crossorigin="anonymous"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.12.9/umd/popper.min.js" integrity="sha384-ApNbgh9B+Y1QKtv3Rn7W3mgPxhU9K/ScQsAP7hUibX39j7fakFPskvXusvfa0b4Q" crossorigin="anonymous"></script>
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/js/bootstrap.min.js" integrity="sha384-JZR6Spejh4U02d8jOt6vLEHfe/JQGiRRSQQxSfFWpi1MquVdAyjUar5+76PVCmYl" crossorigin="anonymous"></script>
+    <div id="carouselExampleIndicators{{ loop.index }}" class="carousel slide" data-ride="carousel">
+        <ol class="carousel-indicators">
+            {% for img in item.files_linked.split(', ') %}
+            <li data-target="#carouselExampleIndicators" data-slide-to="{{loop.index0}}" class="{% if loop.first %} active {% endif %}"></li>
             {% endfor %}
-        </div>
+        </ol>
         <div class="carousel-inner">
             {% for img in item.files_linked.split(', ') %}
                 <div class="carousel-item {% if loop.first %} active {% endif %}">
@@ -44,20 +47,28 @@
                 </div>
                 {% endfor %}
         </div>
-        <button class="carousel-control-prev" type="button" data-bs-target="#carouselIndicators" data-bs-slide="prev">
+        <a class="carousel-control-prev" href="#carouselExampleIndicators{{ loop.index }}" role="button" data-slide="prev">
             <span class="carousel-control-prev-icon" aria-hidden="true"></span>
-            <span class="visually-hidden">Предыдущий</span>
-        </button>
-        <button class="carousel-control-next" type="button" data-bs-target="#carouselIndicators" data-bs-slide="next">
+            <span class="sr-only">Previous</span>
+        </a>
+        <a class="carousel-control-next" href="#carouselExampleIndicators{{ loop.index }}" role="button" data-slide="next">
             <span class="carousel-control-next-icon" aria-hidden="true"></span>
-            <span class="visually-hidden">Следующий</span>
-        </button>
+            <span class="sr-only">Next</span>
+        </a>
     </div>
-
-
+</div>
+    {% if current_user.is_authenticated and current_user == item.user %}
+    <div>
+        <a href="/news/{{ item.id }}" class="btn btn-warning">
+            Изменить
+        </a>
+        <a href="/news_delete/{{ item.id }}" class="btn btn-danger">
+            Удалить
+        </a>
+    </div>
+{% endif %}
 {% endfor %}
 
-</div>
 {% endblock %}
 </body>
 </html>
