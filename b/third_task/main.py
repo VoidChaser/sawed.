@@ -1,10 +1,13 @@
-from flask import Flask, render_template, redirect, request, make_response, session, abort
+from flask import Flask, render_template, redirect, request, make_response, session, abort, jsonify
 from data import db_session
 from data.users import User
 from data.files import File
 from data.posts import Post
+from data import db_session, news_api
 from werkzeug.utils import secure_filename
 from PIL import Image
+from data.post_resources import PostsResource, PostsListResource
+from flask_restful import reqparse, abort, Api, Resource
 import os
 from forms.Register import RegisterForm
 from forms.PostsForm import PostsForm
@@ -16,7 +19,10 @@ from flask_login import LoginManager
 from static.admin_info import main_admin_log, main_admin_pass
 import datetime
 
+
+
 app = Flask(__name__)
+api = Api(app)
 app.config['SECRET_KEY'] = 'base64willbeherebutnottoday.'
 app.config['PERMANENT_SESSION_LIFETIME'] = datetime.timedelta(
     days=31
@@ -28,9 +34,13 @@ login_manager.init_app(app)
 
 def main():
     db_session.global_init("db/sawedbase.db")
+    # app.register_blueprint(news_api.blueprint) #
     create_admin_user('trofi', 'Kukush', main_admin_log, main_admin_pass)
-    # create_meet_img('static/img/welcome.jpg')
-    # meet_post()
+    # для списка объектов
+    api.add_resource(PostsListResource, '/api/v2/posts')
+
+    # для одного объекта
+    api.add_resource(PostsResource, '/api/v2/posts/<int:post_id>')
     app.run()
 
 
@@ -50,7 +60,6 @@ def index():
             images.append(file)
     images.sort()
     return render_template('index.html', posts=posts)
-    # return render_template('index.html', posts=posts, files=files)
 
 
 
@@ -111,6 +120,15 @@ def login():
 def logout():
     logout_user()
     return redirect("/")
+
+@app.errorhandler(404)
+def not_found(error):
+    return make_response(jsonify({'error': 'Not found'}), 404)
+
+
+@app.errorhandler(400)
+def bad_request(_):
+    return make_response(jsonify({'error': 'Bad Request'}), 400)
 
 @app.route('/post',  methods=['GET', 'POST'])
 @login_required

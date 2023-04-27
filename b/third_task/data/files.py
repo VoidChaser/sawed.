@@ -2,11 +2,12 @@ import datetime
 
 import sqlalchemy
 from sqlalchemy import orm
+from sqlalchemy_serializer import SerializerMixin
 
 from . db_session import SqlAlchemyBase
 
 
-class File(SqlAlchemyBase):
+class File(SqlAlchemyBase, SerializerMixin):
     posts = orm.relationship("Post", back_populates='file')
     __tablename__ = 'files'
 

@@ -2,11 +2,12 @@ import datetime
 
 import sqlalchemy
 from sqlalchemy import orm
+from sqlalchemy_serializer import SerializerMixin
 
 from . db_session import SqlAlchemyBase
 
 
-class Post(SqlAlchemyBase):
+class Post(SqlAlchemyBase, SerializerMixin):
     __tablename__ = 'posts'
 
     id = sqlalchemy.Column(sqlalchemy.Integer, primary_key=True, autoincrement=True)
@@ -16,6 +17,7 @@ class Post(SqlAlchemyBase):
     files_linked = sqlalchemy.Column(sqlalchemy.String, sqlalchemy.ForeignKey('files.file_link'), nullable=True)
     files_count = sqlalchemy.Column(sqlalchemy.Integer, nullable=True)
     is_private = sqlalchemy.Column(sqlalchemy.Boolean, default=False)
+    is_published = sqlalchemy.Column(sqlalchemy.Boolean, default=True)
     created_date = sqlalchemy.Column(sqlalchemy.DateTime, default=datetime.datetime.now(), nullable=True)
 
     user = orm.relationship("User")
