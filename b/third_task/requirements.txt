@@ -1,0 +1,12 @@
+flask
+werkzeug.utils
+PIL
+flask_restful
+os
+flask_login
+flask-WTF
+datetime
+sqlalchemy
+sqlalchemy_serializer
+flask_restful
+requests

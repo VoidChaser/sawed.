@@ -20,7 +20,6 @@ from static.admin_info import main_admin_log, main_admin_pass
 import datetime
 
 
-
 app = Flask(__name__)
 api = Api(app)
 app.config['SECRET_KEY'] = 'base64willbeherebutnottoday.'
@@ -34,12 +33,9 @@ login_manager.init_app(app)
 
 def main():
     db_session.global_init("db/sawedbase.db")
-    # app.register_blueprint(news_api.blueprint) #
     create_admin_user('trofi', 'Kukush', main_admin_log, main_admin_pass)
-    # для списка объектов
     api.add_resource(PostsListResource, '/api/v2/posts')
 
-    # для одного объекта
     api.add_resource(PostsResource, '/api/v2/posts/<int:post_id>')
     app.run()
 
@@ -263,10 +259,5 @@ def create_admin_user(name, pas, ma_log, ma_pass):
             print(f"New admin called {name} was created.")
 
 
-
-
-
-
 if __name__ == '__main__':
     main()
-
