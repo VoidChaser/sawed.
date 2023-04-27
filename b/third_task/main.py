@@ -12,7 +12,7 @@ from forms.Login_form import LoginForm
 from flask_login import login_user, login_required, logout_user, current_user
 
 from flask_login import LoginManager
-from static.img_tools import create_miniature
+
 from static.admin_info import main_admin_log, main_admin_pass
 import datetime
 
@@ -29,8 +29,8 @@ login_manager.init_app(app)
 def main():
     db_session.global_init("db/sawedbase.db")
     create_admin_user('trofi', 'Kukush', main_admin_log, main_admin_pass)
-    create_meet_img('static/welcome.jpg')
-    meet_post()
+    # create_meet_img('static/img/welcome.jpg')
+    # meet_post()
     app.run()
 
 
@@ -43,8 +43,16 @@ def index():
             (Post.user == current_user) | (Post.is_private != True))
     else:
         posts = session.query(Post).filter(Post.is_private != True)
-    files = session.query(File)
-    return render_template('index.html', posts=posts, files=files)
+    # files = session.query(File)
+    images = []
+    for curdir, folders, files in os.walk('static/img'):
+        for file in files:
+            images.append(file)
+    images.sort()
+    return render_template('index.html', posts=posts)
+    # return render_template('index.html', posts=posts, files=files)
+
+
 
 
 @login_manager.user_loader
@@ -110,16 +118,17 @@ def add_news():
     form = PostsForm()
 
     if form.validate_on_submit():
-        db_sess = db_session.create_session()
         post = Post()
         post.title = form.title.data
         post.text = form.text.data
 
         files_filenames = []
+        db_sess = db_session.create_session()
+
         for file in form.files.data:
             file_name = secure_filename(file.filename)
             files_filenames.append(file_name)
-            path = 'static/' + str(current_user.id) + '_' + post.title + '_' + post.text[:10] + '_' + file_name
+            path = 'static/img/' + file_name
             file.save(path)
 
             nf = File()
@@ -130,7 +139,7 @@ def add_news():
 
         if files_filenames:
 
-            post.files_linked = ', '.join(list(map(lambda x: db_sess.query(File).filter(File.file_name == x).first().file_link, files_filenames)))
+            post.files_linked = ', '.join(files_filenames)
             post.files_count = len(files_filenames)
             print(post.files_linked)
 
@@ -165,37 +174,7 @@ def create_admin_user(name, pas, ma_log, ma_pass):
 
 
 
-def create_meet_img(path):
 
-
-    db_ses = db_session.create_session()
-
-    file = File()
-    file.user_id = db_ses.query(User).filter(User.admin_rules == 1).first().id
-    file.file_link = path
-
-    db_ses.add(file)
-    db_ses.commit()
-
-
-def meet_post():
-    db_ses = db_session.create_session()
-
-    post = Post()
-    post.post_creator_id = db_ses.query(User).filter(User.admin_rules == 1).first().id
-    admin_id = post.post_creator_id
-    post.title = 'Приветствую'
-    post.text = 'Это сообщение было создано автоматически.'
-    post.created_date = datetime.datetime.now()
-    print(list(map(lambda x: x.user.id, db_ses.query(File).all())))
-    print(post.post_creator_id)
-    quer = db_ses.query(File).filter(File.user_id == post.post_creator_id).first()
-    post.files_linked = ', '.join([quer.file_link])
-    post.files_count = 1
-
-    print(post.files_linked)
-    db_ses.add(post)
-    db_ses.commit()
 
 
 if __name__ == '__main__':
