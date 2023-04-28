@@ -1,5 +1,5 @@
 from . import db_session
-from posts import Post
+from .posts import Post
 from flask import abort, jsonify
 from flask_restful import Resource
 import flask_reqparse
