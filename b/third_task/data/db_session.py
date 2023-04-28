@@ -3,6 +3,8 @@ import sqlalchemy.orm as orm
 from sqlalchemy.orm import Session, declarative_base
 import sqlalchemy.ext.declarative as dec
 
+# Файл для создания декларотивной базы данных с помощью Sqlalchemy и обращения к ней через главный исполняемый файл
+
 SqlAlchemyBase = orm.declarative_base()
 
 __factory = None
