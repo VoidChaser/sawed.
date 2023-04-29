@@ -44,7 +44,7 @@ def main():
     # api.add_resource(PostsListResource, '/api/v2/posts')
 
     # api.add_resource(PostsResource, '/api/v2/posts/<int:post_id>')
-    app.run()
+    app.run(port=8080, host='127.0.0.1')
 
     # с помощью написанного модуля db_session инициализируем базу данных(Если она есть, то подключаемся, если её нет,
     # то создаём заново, и подключаемся соответственно).
@@ -107,6 +107,7 @@ def reqister():
         user = User(
             nickname=form.nickname.data,
             email=form.email.data,
+
         )
         user.set_password(form.password.data)
         db_sess.add(user)

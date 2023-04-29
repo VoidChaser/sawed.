@@ -17,7 +17,7 @@ class User(SqlAlchemyBase, UserMixin, SerializerMixin):
     nickname = sqlalchemy.Column(sqlalchemy.String, nullable=True)
     email = sqlalchemy.Column(sqlalchemy.String, index=True, nullable=True)
     hashed_password = sqlalchemy.Column(sqlalchemy.String, index=True, nullable=True)
-    modified_date = sqlalchemy.Column(sqlalchemy.DateTime)
+    modified_date = sqlalchemy.Column(sqlalchemy.DateTime, default=datetime.datetime.now())
     admin_rules = sqlalchemy.Column(sqlalchemy.Boolean, default=False)
 
     def set_password(self, password):
